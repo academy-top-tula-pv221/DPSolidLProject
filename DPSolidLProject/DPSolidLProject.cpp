@@ -34,11 +34,11 @@ class Square : public Rectangle
 };
 void TestRectangleArea(Rectangle* rect) 
 {
-    if (typeid(rect).name() == "Square")
+    if (typeid(rect) == typeid(Square))
     {
         rect->SetWidth(5);
         if (rect->Area() != 25)
-            throw new exception("invalid area for rectangle");
+            throw new exception("invalid area for square");
     }
     else
     {
@@ -50,20 +50,36 @@ void TestRectangleArea(Rectangle* rect)
     
 }
 
-class Account 
+class IAmountOperations
 {
 protected:
     int amount;
 public:
-    virtual void SetAmount(int money)
+    virtual void SetAmount(int money) = 0;
+    virtual void GetProcents(float rate) = 0;
+    int& Amount() { return amount; }
+};
+
+class Account : public IAmountOperations
+{
+public:
+    void SetAmount(int money) override
     {
         if (money < 0)
             throw exception("negative money");
         amount = money;
     }
+    void GetProcents(float rate) override
+    {
+        for (int i = 0; i < 12; i++)
+            amount += amount * rate;
+        if (amount >= 100)
+            amount += 50;
+    }
+    
 };
 
-class MicroAccount : public Account
+class MicroAccount : public IAmountOperations
 {
 public:
     void SetAmount(int money) override
@@ -74,7 +90,19 @@ public:
             throw exception("money too much");
         amount = money;
     }
+
+    void GetProcents(float rate) override
+    {
+        for (int i = 0; i < 12; i++)
+            amount += amount * rate;
+    }
 };
+
+void AccountInit(IAmountOperations* account, int money)
+{
+    account->SetAmount(money);
+    cout << account->Amount();
+}
 
 
 int main()
@@ -90,4 +118,7 @@ int main()
         cout << "error: " << e->what() << "\n";
     }
     */
+
+    IAmountOperations* acc = new MicroAccount();
+    AccountInit(acc, 200);
 }
